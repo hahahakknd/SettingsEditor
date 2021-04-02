@@ -7,7 +7,7 @@ import android.util.Log
 
 class BootReceiver: BroadcastReceiver() {
     companion object {
-        private const val TAG: String = "BootReceiver"
+        private const val TAG: String = "SettingsEditor.BootReceiver"
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {

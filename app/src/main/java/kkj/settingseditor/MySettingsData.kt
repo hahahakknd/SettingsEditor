@@ -4,7 +4,7 @@ import android.content.Context
 
 class MySettingsData(context: Context) {
     companion object {
-        private const val TAG = "SharedPreferencesManager"
+        private const val TAG = "SettingsEditor.SharedPreferencesManager"
         private const val PREFERENCES_NAME = "shared_preferences"
         private const val DEFAULT_VALUE_STRING: String = ""
         private const val DEFAULT_VALUE_BOOLEAN: Boolean = false

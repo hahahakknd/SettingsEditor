@@ -2,8 +2,10 @@ package kkj.settingseditor
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -13,7 +15,7 @@ import kkj.settingseditor.ui.main.SectionsPagerAdapter
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        private const val TAG: String = "MainActivity"
+        private const val TAG: String = "SettingsEditor.MainActivity"
     }
 
     private lateinit var mMySettingsData: MySettingsData
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                     .setAction("Action", null).show()
         }
 
+        setSupportActionBar(findViewById(R.id.toolbar))
         mMySettingsData = MySettingsData(this)
     }
 
@@ -41,14 +44,14 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        menu?.getItem(0)?.isChecked = mMySettingsData.serviceAutoRun
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.getItem(0)?.isChecked = mMySettingsData.serviceAutoRun
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.auto_run -> mMySettingsData.serviceAutoRun = item.isChecked
+            R.id.auto_run -> mMySettingsData.serviceAutoRun = !item.isChecked
             R.id.run -> startForegroundService(Intent(this, SettingsMonitoringService::class.java))
             R.id.stop -> stopService(Intent(this, SettingsMonitoringService::class.java))
         }

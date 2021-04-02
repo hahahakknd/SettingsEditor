@@ -13,7 +13,7 @@ import android.util.Log
 
 class SettingsMonitoringService: Service() {
     companion object {
-        private const val TAG = "SettingsMonitoringService"
+        private const val TAG = "SettingsEditor.SettingsMonitoringService"
         private const val FOREGROUND_ID = 1
     }
 

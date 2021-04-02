@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/auto_run"
+        android:checkable="true"
         android:title="@string/service_auto_run"
-        android:checkable="true"/>
+        app:showAsAction="never" />
     <item
         android:id="@+id/run"
-        android:title="@string/start_service" />
+        android:title="@string/start_service"
+        app:showAsAction="never" />
     <item
         android:id="@+id/stop"
-        android:title="@string/stop_service" />
+        android:title="@string/stop_service"
+        app:showAsAction="never" />
 </menu>
