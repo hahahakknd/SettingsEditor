@@ -23,7 +23,7 @@ class BootReceiver: BroadcastReceiver() {
 
         val action: String = (intent.action)?:""
         if(Intent.ACTION_BOOT_COMPLETED == action) {
-            if (MySettingsData(context).serviceAutoRun) {
+            if (MyPreferences(context).serviceAutoRun) {
                 context.startForegroundService(Intent(context, SettingsMonitoringService::class.java))
                 Log.d(TAG, "SettingsMonitoringService is started.")
             }

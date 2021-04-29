@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -18,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         private const val TAG: String = "SettingsEditor.MainActivity"
     }
 
-    private lateinit var mMySettingsData: MySettingsData
+    private lateinit var mMySettingsData: MyPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +35,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         setSupportActionBar(findViewById(R.id.toolbar))
-        mMySettingsData = MySettingsData(this)
+        mMySettingsData = MyPreferences(this)
+        MySettings.makeInstance(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

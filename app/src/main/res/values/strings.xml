@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">SettingsEditor</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_global">Global</string>
+    <string name="tab_system">System</string>
+    <string name="tab_secure">Secure</string>
     <string name="service_auto_run">Service Auto Run</string>
     <string name="start_service">Start Service</string>
     <string name="stop_service">Stop Service</string>
