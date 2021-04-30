@@ -10,7 +10,6 @@ class MySettings private constructor (context: Context) {
         private const val TAG: String = "SettingsEditor.MySettings"
         @Volatile
         private var instance: MySettings? = null
-        @Synchronized
         fun getInstance() = instance
         @Synchronized
         fun makeInstance(context: Context) {
@@ -53,9 +52,9 @@ class MySettings private constructor (context: Context) {
                 null
         )?.use { cursor ->
             while (cursor.moveToNext()) {
-                val key = getData(cursor, 0)
+                val name = getData(cursor, 0)
                 val value = getData(cursor, 1)
-                settings.add(arrayOf(key, value))
+                settings.add(arrayOf(name, value))
             }
         }
         return settings

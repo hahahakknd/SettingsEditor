@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentPagerAdapter
 import kkj.settingseditor.R
 
 private val TAB_TITLES = arrayOf(
+        R.string.tab_favorite,
         R.string.tab_global,
         R.string.tab_system,
         R.string.tab_secure
@@ -25,12 +26,12 @@ class SectionsPagerAdapter(private val context: Context, fm: FragmentManager)
         return PlaceholderFragment.newInstance(position + 1)
     }
 
-    override fun getPageTitle(position: Int): CharSequence? {
+    override fun getPageTitle(position: Int): CharSequence {
         return context.resources.getString(TAB_TITLES[position])
     }
 
     override fun getCount(): Int {
-        // Show 3 total pages.
-        return 3
+        // Show 4 total pages.
+        return 4
     }
 }

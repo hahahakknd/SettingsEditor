@@ -10,9 +10,9 @@ class PageViewModel : ViewModel() {
     private val _index = MutableLiveData<Int>()
     val text: LiveData<ArrayList<Array<String>>> = Transformations.map(_index) {
         when (it) {
-            1 -> MySettings.getInstance()?.queryGlobalSettings() // Global
-            2 -> MySettings.getInstance()?.querySystemSettings() // System
-            3 -> MySettings.getInstance()?.querySecureSettings() // Secure
+            2 -> MySettings.getInstance()?.queryGlobalSettings() // Global
+            3 -> MySettings.getInstance()?.querySystemSettings() // System
+            4 -> MySettings.getInstance()?.querySecureSettings() // Secure
             else -> arrayListOf()
         }
     }

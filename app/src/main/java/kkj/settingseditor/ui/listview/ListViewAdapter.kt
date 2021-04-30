@@ -1,13 +1,14 @@
 package kkj.settingseditor.ui.listview
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.ImageView
+import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
+import kkj.settingseditor.MySettings
 import kkj.settingseditor.R
 
 import java.util.ArrayList
@@ -27,12 +28,13 @@ class ListViewAdapter : BaseAdapter() {
         val view = convertView?:
             (parent.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater)
                     .inflate(R.layout.item, parent, false)
-        val keyTextView = view.findViewById(R.id.item_key) as TextView
-        val valueTextView = view.findViewById(R.id.item_value) as TextView
+        val nameTextView = view.findViewById(R.id.item_name) as TextView
+        val valueEditText = view.findViewById(R.id.item_value) as EditText
+        valueEditText.setOnClickListener { Toast.makeText(parent.context, valueEditText.text, Toast.LENGTH_LONG).show() }
         val listViewItem = listViewItemList[position]
 
-        keyTextView.text = listViewItem[0]
-        valueTextView.text = listViewItem[1]
+        nameTextView.text = listViewItem[0]
+        valueEditText.setText(listViewItem[1])
 
         return view
     }
