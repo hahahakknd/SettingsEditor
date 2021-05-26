@@ -1,26 +1,36 @@
 package kkj.settingseditor.ui.listview
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
-import kkj.settingseditor.MySettings
+import com.google.android.material.snackbar.Snackbar
+import kkj.settingseditor.MyDatabase
 import kkj.settingseditor.R
 
 import java.util.ArrayList
 
 // ListViewAdapter 의 생성자
 class ListViewAdapter : BaseAdapter() {
+    companion object {
+        private const val TAG = "SettingsEditor.ListViewAdapter"
+        private const val ID = 0
+        private const val NAME = 1
+        private const val VALUE = 2
+    }
+
     // Adapter 에 추가된 데이터를 저장하기 위한 ArrayList
-    private val listViewItemList = ArrayList<Array<String>>()
+    private val mListViewItemList = ArrayList<Array<String>>()
+
+    private var mPageNumber = -1
 
     // Adapter 에 사용되는 데이터의 개수를 리턴 (필수 구현)
     override fun getCount(): Int {
-        return listViewItemList.size
+        return mListViewItemList.size
     }
 
     // position 에 위치한 데이터를 화면에 출력하는데 사용될 View 를 리턴 (필수 구현)
@@ -30,11 +40,26 @@ class ListViewAdapter : BaseAdapter() {
                     .inflate(R.layout.item, parent, false)
         val nameTextView = view.findViewById(R.id.item_name) as TextView
         val valueEditText = view.findViewById(R.id.item_value) as EditText
-        valueEditText.setOnClickListener { Toast.makeText(parent.context, valueEditText.text, Toast.LENGTH_LONG).show() }
-        val listViewItem = listViewItemList[position]
+        val listViewItem = mListViewItemList[position]
 
-        nameTextView.text = listViewItem[0]
-        valueEditText.setText(listViewItem[1])
+        if (mPageNumber == 0) {
+            nameTextView.setOnLongClickListener {
+                MyDatabase.getInstance()?.delete(listViewItem[ID])
+                Snackbar.make(view, "Delete the settings item to favorite list.", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show()
+                return@setOnLongClickListener true
+            }
+        } else {
+            nameTextView.setOnLongClickListener {
+                MyDatabase.getInstance()?.write(listViewItem[ID], listViewItem[NAME], listViewItem[VALUE])
+                Snackbar.make(view, "Add the settings item to favorite list.", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show()
+                return@setOnLongClickListener true
+            }
+        }
+
+        nameTextView.text = listViewItem[NAME]
+        valueEditText.setText(listViewItem[VALUE])
 
         return view
     }
@@ -46,11 +71,17 @@ class ListViewAdapter : BaseAdapter() {
 
     // 지정한 위치(position)에 있는 데이터 리턴 : 필수 구현
     override fun getItem(position: Int): Any {
-        return listViewItemList[position]
+        return mListViewItemList[position]
     }
 
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    fun addItem(key: String, value: String) {
-        listViewItemList.add(arrayOf(key, value))
+    fun addItems(items: ArrayList<Array<String>>) {
+        mListViewItemList.clear()
+        mListViewItemList.addAll(items)
+        notifyDataSetChanged()
+    }
+
+    fun setPageNumber(pageNumber: Int) {
+        mPageNumber = pageNumber
     }
 }

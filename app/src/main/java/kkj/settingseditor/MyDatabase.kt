@@ -62,61 +62,83 @@ class MyDatabase private constructor (context: Context) {
     }
 
     fun read(): ArrayList<Array<String>> {
-        val dataList = arrayListOf<Array<String>>()
-        val projection
-            = arrayOf(BaseColumns._ID,
-                      DbContract.FavoriteSettingsEntry.COLUMN_NAME,
-                      DbContract.FavoriteSettingsEntry.COLUMN_VALUE)
-        val selection = null
-        val selectionArgs = null
-        val groupBy = null
-        val having = null
-        val sortOrder = null
-        mDb.query(
-            DbContract.FavoriteSettingsEntry.TABLE_FAVOR,
-            projection,
-            selection,              // The columns for the WHERE clause
-            selectionArgs,          // The values for the WHERE clause
-            groupBy,                   // don't group the rows
-            having,                   // don't filter by row groups
-            sortOrder               // The sort order
-        )?.use { cursor ->
+        val sql = "SELECT ${BaseColumns._ID}," +
+                         "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}, " +
+                         "${DbContract.FavoriteSettingsEntry.COLUMN_VALUE} " +
+                  "FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR}"
+        val whereArgs = null
+        val result = ArrayList<Array<String>>()
+
+        mDb.rawQuery(sql, whereArgs)?.use { cursor ->
             while (cursor.moveToNext()) {
-                val id = getDataAsString(cursor, 0)
-                val name = getDataAsString(cursor, 1)
-                val value = getDataAsString(cursor, 2)
-                dataList.add(arrayOf(id, name, value))
+                Array(cursor.columnCount) { "" }
+                val colData = Array(cursor.columnCount) { "" }
+                for (colIdx in 0 until cursor.columnCount) {
+                    colData[colIdx] = getDataAsString(cursor, colIdx)
+                }
+                result.add(colData)
             }
         }
-        return dataList
+
+        return result
     }
 
-    fun write(name: String, value: String): Boolean {
-        val values = ContentValues().apply {
-            put(DbContract.FavoriteSettingsEntry.COLUMN_NAME, name)
-            put(DbContract.FavoriteSettingsEntry.COLUMN_VALUE, value)
+    fun write(id: String, name: String, value: String) {
+        var isUpdate = false
+        val selectSql = "SELECT count(*) " +
+                        "FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
+                        "WHERE ${BaseColumns._ID}=?"
+        val selectWhereArgs = arrayOf(id)
+        mDb.rawQuery(selectSql, selectWhereArgs)?.use { cursor ->
+            cursor.moveToNext()
+            isUpdate = (getDataAsString(cursor,0).toInt() != 0)
         }
-        val result = mDb.insert(DbContract.FavoriteSettingsEntry.TABLE_FAVOR, null, values).toInt()
-        return result != -1
+
+        val sql: String
+        val whereArgs: Array<String>
+        if (isUpdate) {
+            sql = "UPDATE ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
+                  "SET ${DbContract.FavoriteSettingsEntry.COLUMN_VALUE}='${value}' " +
+                  "WHERE ${BaseColumns._ID}=?"
+            whereArgs = arrayOf(name)
+        } else {
+            sql = "INSERT INTO ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR}(" +
+                       "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}," +
+                       "${DbContract.FavoriteSettingsEntry.COLUMN_VALUE}" +
+                  ") " +
+                  "VALUES ('${name}', '${value}')"
+            whereArgs = emptyArray()
+        }
+        mDb.execSQL(sql, whereArgs)
     }
 
-    class MyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+    fun delete(id: String) {
+        val deleteSql = "DELETE FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
+                        "WHERE ${BaseColumns._ID}=?"
+        val deleteWhereArgs = arrayOf(id)
+        mDb.execSQL(deleteSql, deleteWhereArgs)
+    }
+
+    private class MyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+        companion object {
+            // If you change the database schema, you must increment the database version.
+            const val DATABASE_VERSION = 1
+            const val DATABASE_NAME = "my_database.db"
+        }
+
         override fun onCreate(db: SQLiteDatabase) {
             db.execSQL(DbContract.CREATE_TABLE_SQL)
         }
+
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
             // This database is only a cache for online data, so its upgrade policy is
             // to simply to discard the data and start over
             db.execSQL(DbContract.DELETE_TABLE_SQL)
             onCreate(db)
         }
+
         override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
             onUpgrade(db, oldVersion, newVersion)
-        }
-        companion object {
-            // If you change the database schema, you must increment the database version.
-            const val DATABASE_VERSION = 1
-            const val DATABASE_NAME = "my_database.db"
         }
     }
 }

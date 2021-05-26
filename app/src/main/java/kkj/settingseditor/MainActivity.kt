@@ -18,17 +18,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var mMySettingsData: MyPreferences
+    private lateinit var sectionsPagerAdapter: SectionsPagerAdapter
+    private lateinit var viewPager: ViewPager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
-        val viewPager: ViewPager = findViewById(R.id.view_pager)
+        sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
+        viewPager = findViewById(R.id.view_pager)
         viewPager.adapter = sectionsPagerAdapter
         val tabs: TabLayout = findViewById(R.id.tabs)
         tabs.setupWithViewPager(viewPager)
-        val fab: FloatingActionButton = findViewById(R.id.fab)
+        tabs.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                val num = tab?.position ?: -1
+                Log.d(TAG, "onTabSelected, position:$num")
+                sectionsPagerAdapter.loadData(num)
+            }
 
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                val num = tab?.position ?: -1
+                Log.d(TAG, "onTabUnselected, position:$num")
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+                val num = tab?.position ?: -1
+                Log.d(TAG, "onTabReselected, position:$num")
+            }
+        })
+
+        val fab: FloatingActionButton = findViewById(R.id.fab)
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
@@ -37,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar))
         mMySettingsData = MyPreferences(this)
         MySettings.makeInstance(this)
+        MyDatabase.makeInstance(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
