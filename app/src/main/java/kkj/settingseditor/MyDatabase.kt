@@ -62,10 +62,11 @@ class MyDatabase private constructor (context: Context) {
     }
 
     fun read(): ArrayList<Array<String>> {
-        val sql = "SELECT ${BaseColumns._ID}," +
+        val sql = "SELECT ${BaseColumns._ID}, " +
                          "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}, " +
                          "${DbContract.FavoriteSettingsEntry.COLUMN_VALUE} " +
-                  "FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR}"
+                  "FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
+                  "ORDER BY ${DbContract.FavoriteSettingsEntry.COLUMN_NAME} ASC"
         val whereArgs = null
         val result = ArrayList<Array<String>>()
 

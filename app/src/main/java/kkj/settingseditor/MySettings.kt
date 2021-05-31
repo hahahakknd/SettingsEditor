@@ -49,7 +49,7 @@ class MySettings private constructor (context: Context) {
             arrayOf("_id", "name", "value"),
             null,
             null,
-            null
+            "name"  // Settings 값들은 정렬이 안된다. XML 로 바껴서???
         )?.use { cursor ->
             while (cursor.moveToNext()) {
                 val colData = Array(cursor.columnCount) { "" }

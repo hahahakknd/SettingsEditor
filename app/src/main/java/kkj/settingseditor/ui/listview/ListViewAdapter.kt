@@ -2,9 +2,11 @@ package kkj.settingseditor.ui.listview
 
 import android.content.Context
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.BaseAdapter
 import android.widget.EditText
 import android.widget.TextView
@@ -25,7 +27,6 @@ class ListViewAdapter : BaseAdapter() {
 
     // Adapter 에 추가된 데이터를 저장하기 위한 ArrayList
     private val mListViewItemList = ArrayList<Array<String>>()
-
     private var mPageNumber = -1
 
     // Adapter 에 사용되는 데이터의 개수를 리턴 (필수 구현)
@@ -58,6 +59,15 @@ class ListViewAdapter : BaseAdapter() {
                         .setAction("Action", null).show()
                 return@setOnLongClickListener true
             }
+        }
+
+        valueEditText.setOnKeyListener { v, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                val imm = parent.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                valueEditText.clearFocus()
+            }
+            return@setOnKeyListener true
         }
 
         nameTextView.text = listViewItem[NAME]
