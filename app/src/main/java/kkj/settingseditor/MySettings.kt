@@ -19,7 +19,7 @@ class MySettings private constructor (context: Context) {
 
     private val mContentResolver = context.contentResolver
 
-    private fun getData(cursor: Cursor, index: Int): String {
+    private fun getDataAsString(cursor: Cursor, index: Int): String {
         when (cursor.getType(index)) {
             Cursor.FIELD_TYPE_NULL -> {
                 return "NULL"
@@ -45,16 +45,18 @@ class MySettings private constructor (context: Context) {
     private fun querySettings(uri: android.net.Uri): ArrayList<Array<String>> {
         val settings = arrayListOf<Array<String>>()
         mContentResolver?.query(
-                uri,
-                arrayOf("name", "value"),
-                null,
-                null,
-                null
+            uri,
+            arrayOf("_id", "name", "value"),
+            null,
+            null,
+            null
         )?.use { cursor ->
             while (cursor.moveToNext()) {
-                val name = getData(cursor, 0)
-                val value = getData(cursor, 1)
-                settings.add(arrayOf(name, value))
+                val colData = Array(cursor.columnCount) { "" }
+                for (colIdx in 0 until cursor.columnCount) {
+                    colData[colIdx] = getDataAsString(cursor, colIdx)
+                }
+                settings.add(colData)
             }
         }
         return settings

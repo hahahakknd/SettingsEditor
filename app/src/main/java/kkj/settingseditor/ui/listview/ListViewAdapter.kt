@@ -45,6 +45,8 @@ class ListViewAdapter : BaseAdapter() {
         if (mPageNumber == 0) {
             nameTextView.setOnLongClickListener {
                 MyDatabase.getInstance()?.delete(listViewItem[ID])
+                mListViewItemList.removeAt(position)
+                notifyDataSetChanged()
                 Snackbar.make(view, "Delete the settings item to favorite list.", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show()
                 return@setOnLongClickListener true

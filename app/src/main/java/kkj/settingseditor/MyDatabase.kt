@@ -71,7 +71,6 @@ class MyDatabase private constructor (context: Context) {
 
         mDb.rawQuery(sql, whereArgs)?.use { cursor ->
             while (cursor.moveToNext()) {
-                Array(cursor.columnCount) { "" }
                 val colData = Array(cursor.columnCount) { "" }
                 for (colIdx in 0 until cursor.columnCount) {
                     colData[colIdx] = getDataAsString(cursor, colIdx)
