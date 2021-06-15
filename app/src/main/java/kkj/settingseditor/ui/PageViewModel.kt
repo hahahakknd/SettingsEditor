@@ -1,4 +1,4 @@
-package kkj.settingseditor.ui.main
+package kkj.settingseditor.ui
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -16,10 +16,10 @@ class PageViewModel : ViewModel() {
     private val _index = MutableLiveData<Int>()
     val text: LiveData<ArrayList<Array<String>>> = Transformations.map(_index) {
         when (it) {
-            0 -> MyDatabase.getInstance()?.read()                // Favorite
-            1 -> MySettings.getInstance()?.queryGlobalSettings() // Global
-            2 -> MySettings.getInstance()?.querySystemSettings() // System
-            3 -> MySettings.getInstance()?.querySecureSettings() // Secure
+            0 -> MyDatabase.getInstance()?.read()               // Favorite
+            1 -> MySettings.getInstance()?.readGlobalSettings() // Global
+            2 -> MySettings.getInstance()?.readSystemSettings() // System
+            3 -> MySettings.getInstance()?.readSecureSettings() // Secure
             else -> arrayListOf()
         }
     }

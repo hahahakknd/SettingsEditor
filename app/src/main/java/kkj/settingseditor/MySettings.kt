@@ -8,6 +8,7 @@ import android.util.Log
 class MySettings private constructor (context: Context) {
     companion object {
         private const val TAG: String = "SettingsEditor.MySettings"
+
         @Volatile
         private var instance: MySettings? = null
         fun getInstance() = instance
@@ -49,7 +50,7 @@ class MySettings private constructor (context: Context) {
             arrayOf("_id", "name", "value"),
             null,
             null,
-            "name"  // Settings 값들은 정렬이 안된다. XML 로 바껴서???
+            "name ASC"  // Settings 값들은 정렬이 안된다. XML 로 바껴서???
         )?.use { cursor ->
             while (cursor.moveToNext()) {
                 val colData = Array(cursor.columnCount) { "" }
@@ -62,15 +63,27 @@ class MySettings private constructor (context: Context) {
         return settings
     }
 
-    fun queryGlobalSettings(): ArrayList<Array<String>> {
+    fun readGlobalSettings(): ArrayList<Array<String>> {
         return querySettings(Settings.Global.CONTENT_URI)
     }
 
-    fun querySystemSettings(): ArrayList<Array<String>> {
+    fun readSystemSettings(): ArrayList<Array<String>> {
         return querySettings(Settings.System.CONTENT_URI)
     }
 
-    fun querySecureSettings(): ArrayList<Array<String>> {
+    fun readSecureSettings(): ArrayList<Array<String>> {
         return querySettings(Settings.Secure.CONTENT_URI)
+    }
+
+    fun writeGlobalSettings(name: String, value: String): Boolean {
+        return Settings.Global.putString(mContentResolver, name, value)
+    }
+
+    fun writeSystemSettings(name: String, value: String): Boolean {
+        return Settings.System.putString(mContentResolver, name, value)
+    }
+
+    fun writeSecureSettings(name: String, value: String): Boolean {
+        return Settings.Secure.putString(mContentResolver, name, value)
     }
 }

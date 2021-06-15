@@ -2,7 +2,7 @@ package kkj.settingseditor
 
 import android.content.Context
 
-class MyPreferences(context: Context) {
+class MyPreferences private constructor (context: Context) {
     companion object {
         private const val TAG = "SettingsEditor.MyPreferences"
         private const val PREFERENCES_NAME = "shared_preferences"
@@ -13,6 +13,14 @@ class MyPreferences(context: Context) {
         private const val DEFAULT_VALUE_FLOAT: Float = -1F
 
         const val AUTO_RUN_SERVICE = "auto_run_service"
+
+        @Volatile
+        private var instance: MyPreferences? = null
+        fun getInstance() = instance
+        @Synchronized
+        fun makeInstance(context: Context) {
+            instance?: MyPreferences(context).also { instance = it }
+        }
     }
 
     private val mSharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)

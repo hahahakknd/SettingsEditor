@@ -7,4 +7,6 @@
     <string name="service_auto_run">Service Auto Run</string>
     <string name="start_service">Start Service</string>
     <string name="stop_service">Stop Service</string>
+    <string name="item_name">Name</string>
+    <string name="item_value">Value</string>
 </resources>

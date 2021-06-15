@@ -1,15 +1,15 @@
-package kkj.settingseditor.ui.main
+package kkj.settingseditor.ui
 
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ListView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kkj.settingseditor.R
-import kkj.settingseditor.ui.listview.ListViewAdapter
 
 /**
  * A placeholder fragment containing a simple view.
@@ -40,6 +40,7 @@ class PlaceholderFragment : Fragment() {
     }
 
     private lateinit var mPageViewModel: PageViewModel
+    private lateinit var mRecyclerView: RecyclerView
     private var mPageNumber  = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,14 +50,24 @@ class PlaceholderFragment : Fragment() {
         loadData()
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume")
+    }
+
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_main,container,false)
-        val adapter = ListViewAdapter()
+
+        mRecyclerView = root.findViewById(R.id.recycler_view) as RecyclerView
+        mRecyclerView.setHasFixedSize(true)
+        mRecyclerView.layoutManager = LinearLayoutManager(root.context)
+
+        val adapter = CardViewAdapter()
         adapter.setPageNumber(mPageNumber)
-        val listView: ListView = root.findViewById(R.id.item_list) as ListView
-        listView.adapter = adapter
+        mRecyclerView.adapter = adapter
+
         mPageViewModel.text.observe(this, {
             adapter.addItems(it)
         })
