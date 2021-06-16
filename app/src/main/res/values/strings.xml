@@ -9,4 +9,7 @@
     <string name="stop_service">Stop Service</string>
     <string name="item_name">Name</string>
     <string name="item_value">Value</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">CANCEL</string>
+    <string name="empty_text">Empty Text</string>
 </resources>

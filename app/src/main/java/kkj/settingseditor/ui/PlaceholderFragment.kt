@@ -66,6 +66,7 @@ class PlaceholderFragment : Fragment() {
 
         val adapter = CardViewAdapter()
         adapter.setPageNumber(mPageNumber)
+        fragmentManager?.let { adapter.setFragmentManager(it) }
         mRecyclerView.adapter = adapter
 
         mPageViewModel.text.observe(this, {
