@@ -70,7 +70,7 @@ class PlaceholderFragment : Fragment() {
         mRecyclerView.adapter = adapter
 
         mPageViewModel.text.observe(this, {
-            adapter.addItems(it)
+            adapter.initItems(it)
         })
         return root
     }

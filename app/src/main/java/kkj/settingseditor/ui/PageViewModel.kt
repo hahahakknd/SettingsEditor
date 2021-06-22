@@ -1,12 +1,11 @@
 package kkj.settingseditor.ui
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
-import kkj.settingseditor.MyDatabase
-import kkj.settingseditor.MySettings
+import kkj.settingseditor.data.MyDatabase
+import kkj.settingseditor.data.MySettings
 
 class PageViewModel : ViewModel() {
     companion object {

@@ -1,9 +1,8 @@
-package kkj.settingseditor
+package kkj.settingseditor.data
 
 import android.content.Context
 import android.database.Cursor
 import android.provider.Settings
-import android.util.Log
 
 class MySettings private constructor (context: Context) {
     companion object {
@@ -14,7 +13,7 @@ class MySettings private constructor (context: Context) {
         fun getInstance() = instance
         @Synchronized
         fun makeInstance(context: Context) {
-            instance?: MySettings(context).also { instance = it }
+            instance ?: MySettings(context).also { instance = it }
         }
     }
 

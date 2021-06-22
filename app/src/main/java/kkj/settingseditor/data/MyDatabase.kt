@@ -1,12 +1,10 @@
-package kkj.settingseditor
+package kkj.settingseditor.data
 
-import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
-import android.util.Log
 
 class MyDatabase private constructor (context: Context) {
     companion object {
@@ -17,7 +15,7 @@ class MyDatabase private constructor (context: Context) {
         fun getInstance() = instance
         @Synchronized
         fun makeInstance(context: Context) {
-            instance?: MyDatabase(context).also { instance = it }
+            instance ?: MyDatabase(context).also { instance = it }
         }
     }
 
@@ -66,7 +64,7 @@ class MyDatabase private constructor (context: Context) {
                          "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}, " +
                          "${DbContract.FavoriteSettingsEntry.COLUMN_VALUE} " +
                   "FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
-                  "ORDER BY ${DbContract.FavoriteSettingsEntry.COLUMN_NAME} ASC"
+                  "ORDER BY ${DbContract.FavoriteSettingsEntry.COLUMN_NAME} COLLATE NOCASE ASC"
         val whereArgs = null
         val result = ArrayList<Array<String>>()
 
@@ -95,21 +93,22 @@ class MyDatabase private constructor (context: Context) {
         }
 
         val sql: String
-        val whereArgs: Array<String>
+        val bindArgs: Array<String>
         if (isUpdate) {
             sql = "UPDATE ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
-                  "SET ${DbContract.FavoriteSettingsEntry.COLUMN_VALUE}='${value}' " +
+                  "SET ${DbContract.FavoriteSettingsEntry.COLUMN_VALUE}=? " +
                   "WHERE ${BaseColumns._ID}=?"
-            whereArgs = arrayOf(name)
+            bindArgs = arrayOf(value, id)
         } else {
             sql = "INSERT INTO ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR}(" +
-                       "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}," +
+                       "${BaseColumns._ID}, " +
+                       "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}, " +
                        "${DbContract.FavoriteSettingsEntry.COLUMN_VALUE}" +
                   ") " +
-                  "VALUES ('${name}', '${value}')"
-            whereArgs = emptyArray()
+                  "VALUES (?,?,?)"
+            bindArgs = arrayOf(id, name, value)
         }
-        mDb.execSQL(sql, whereArgs)
+        mDb.execSQL(sql, bindArgs)
     }
 
     fun delete(id: String) {

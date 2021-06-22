@@ -1,15 +1,15 @@
 package kkj.settingseditor.ui
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
-import kkj.settingseditor.MyDatabase
+import kkj.settingseditor.data.MyDatabase
 import kkj.settingseditor.MyUtils
 import kkj.settingseditor.R
+import kkj.settingseditor.data.MyMemoryDatabase
 
 class  CardViewAdapter : RecyclerView.Adapter<CardViewAdapter.ViewHolder>() {
     companion object {
@@ -42,8 +42,10 @@ class  CardViewAdapter : RecyclerView.Adapter<CardViewAdapter.ViewHolder>() {
         view.setOnClickListener {
             mFragmentManager?.let {
                 EditBoxDialogFragment(
+                    viewHolder.mItemPosition,
                     mItemList[viewHolder.mItemPosition][NAME],
-                    mItemList[viewHolder.mItemPosition][VALUE]
+                    mItemList[viewHolder.mItemPosition][VALUE],
+                    this
                 ).show(it, "EditBox")
             }
         }
@@ -57,6 +59,7 @@ class  CardViewAdapter : RecyclerView.Adapter<CardViewAdapter.ViewHolder>() {
                 val name = mItemList[viewHolder.mItemPosition][NAME]
 
                 MyDatabase.getInstance()?.delete(mItemList[viewHolder.mItemPosition][ID])
+                MyMemoryDatabase.getInstance()?.delete(mItemList[viewHolder.mItemPosition][ID])
                 mItemList.removeAt(viewHolder.mItemPosition)
                 notifyItemRemoved(viewHolder.mItemPosition)
                 MyUtils.showSnackbarWithAutoDismiss(
@@ -97,10 +100,27 @@ class  CardViewAdapter : RecyclerView.Adapter<CardViewAdapter.ViewHolder>() {
         return mItemList.size
     }
 
-    // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    fun addItems(items: ArrayList<Array<String>>) {
+    fun changeItem(pos: Int, value: String) {
+        // 여기서 디비와 셋팅의 값 변경
+
+        mItemList[pos][VALUE] = value
+        notifyItemChanged(pos)
+    }
+
+    fun initItems(items: ArrayList<Array<String>>) {
+        MyMemoryDatabase.getInstance()?.refresh(items)
+        searchAllItems()
+    }
+
+    fun searchAllItems() {
         mItemList.clear()
-        mItemList.addAll(items)
+        MyMemoryDatabase.getInstance()?.searchAll()?.let { mItemList.addAll(it) }
+        notifyDataSetChanged()
+    }
+
+    fun searchItems(pattern: String) {
+        mItemList.clear()
+        MyMemoryDatabase.getInstance()?.search(pattern)?.let { mItemList.addAll(it) }
         notifyDataSetChanged()
     }
 

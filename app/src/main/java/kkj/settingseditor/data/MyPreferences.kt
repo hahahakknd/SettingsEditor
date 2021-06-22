@@ -1,4 +1,4 @@
-package kkj.settingseditor
+package kkj.settingseditor.data
 
 import android.content.Context
 
@@ -19,7 +19,7 @@ class MyPreferences private constructor (context: Context) {
         fun getInstance() = instance
         @Synchronized
         fun makeInstance(context: Context) {
-            instance?: MyPreferences(context).also { instance = it }
+            instance ?: MyPreferences(context).also { instance = it }
         }
     }
 
