@@ -11,15 +11,14 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import kkj.settingseditor.R
 
-class EditBoxDialogFragment(pos: Int, name: String, value: String, adapter: CardViewAdapter) : DialogFragment() {
+class EditBoxDialogFragment(
+        private val item: Array<String>,
+        private val itemViewPos: Int,
+        private val adapter: CardViewAdapter
+) : DialogFragment() {
     companion object {
         private const val TAG = "SettingsEditor.CardViewAdapter"
     }
-
-    private val mPosition = pos
-    private val mItemName = name
-    private val mItemValue = value
-    private val mAdapter = adapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,14 +33,14 @@ class EditBoxDialogFragment(pos: Int, name: String, value: String, adapter: Card
         val view = inflater.inflate(R.layout.dialog_editbox, container,false)
 
         val itemNameView = view.findViewById(R.id.edit_box_item_name) as TextView
-        itemNameView.text = mItemName
+        itemNameView.text = item[CardViewAdapter.NAME]
 
         val itemValueView = view.findViewById(R.id.edit_box_item_value) as EditText
-        itemValueView.setText(mItemValue)
+        itemValueView.setText(item[CardViewAdapter.VALUE])
 
         val okView = view.findViewById(R.id.edit_box_ok_button) as Button
         okView.setOnClickListener {
-            mAdapter.changeItem(mPosition, itemValueView.text.toString())
+            adapter.changeItem(itemViewPos, itemValueView.text.toString())
             dismiss()
         }
 

@@ -59,26 +59,27 @@ class MyDatabase private constructor (context: Context) {
         }
     }
 
-    fun read(): ArrayList<Array<String>> {
+    fun read(): Array<Array<String>> {
         val sql = "SELECT ${BaseColumns._ID}, " +
                          "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}, " +
                          "${DbContract.FavoriteSettingsEntry.COLUMN_VALUE} " +
                   "FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
                   "ORDER BY ${DbContract.FavoriteSettingsEntry.COLUMN_NAME} COLLATE NOCASE ASC"
         val whereArgs = null
-        val result = ArrayList<Array<String>>()
 
         mDb.rawQuery(sql, whereArgs)?.use { cursor ->
+            val result = Array(cursor.count) { Array(cursor.columnCount) { "" } }
+            var rowIndex = 0
             while (cursor.moveToNext()) {
-                val colData = Array(cursor.columnCount) { "" }
-                for (colIdx in 0 until cursor.columnCount) {
-                    colData[colIdx] = getDataAsString(cursor, colIdx)
+                for (colIndex in 0 until cursor.columnCount) {
+                    result[rowIndex][colIndex] = getDataAsString(cursor, colIndex)
                 }
-                result.add(colData)
+                rowIndex++
             }
+            return result
         }
 
-        return result
+        return emptyArray()
     }
 
     fun write(id: String, name: String, value: String) {
@@ -120,7 +121,6 @@ class MyDatabase private constructor (context: Context) {
 
     private class MyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
         companion object {
-            // If you change the database schema, you must increment the database version.
             const val DATABASE_VERSION = 1
             const val DATABASE_NAME = "my_database.db"
         }
@@ -130,8 +130,6 @@ class MyDatabase private constructor (context: Context) {
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            // This database is only a cache for online data, so its upgrade policy is
-            // to simply to discard the data and start over
             db.execSQL(DbContract.DELETE_TABLE_SQL)
             onCreate(db)
         }

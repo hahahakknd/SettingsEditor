@@ -42,35 +42,37 @@ class MySettings private constructor (context: Context) {
         }
     }
 
-    private fun querySettings(uri: android.net.Uri): ArrayList<Array<String>> {
-        val settings = arrayListOf<Array<String>>()
+    private fun querySettings(uri: android.net.Uri): Array<Array<String>> {
         mContentResolver?.query(
             uri,
             arrayOf("_id", "name", "value"),
             null,
             null,
-            "name ASC"  // Settings 값들은 정렬이 안된다. XML 로 바껴서???
+            null  // "name ASC", Settings 값들은 정렬이 안된다. XML 로 바껴서???
         )?.use { cursor ->
+            val result = Array(cursor.count) { Array(cursor.columnCount) { "" } }
+            var rowIndex = 0
             while (cursor.moveToNext()) {
-                val colData = Array(cursor.columnCount) { "" }
-                for (colIdx in 0 until cursor.columnCount) {
-                    colData[colIdx] = getDataAsString(cursor, colIdx)
+                for (colIndex in 0 until cursor.columnCount) {
+                    result[rowIndex][colIndex] = getDataAsString(cursor, colIndex)
                 }
-                settings.add(colData)
+                rowIndex++
             }
+            return result
         }
-        return settings
+
+        return emptyArray()
     }
 
-    fun readGlobalSettings(): ArrayList<Array<String>> {
+    fun readGlobalSettings(): Array<Array<String>> {
         return querySettings(Settings.Global.CONTENT_URI)
     }
 
-    fun readSystemSettings(): ArrayList<Array<String>> {
+    fun readSystemSettings(): Array<Array<String>> {
         return querySettings(Settings.System.CONTENT_URI)
     }
 
-    fun readSecureSettings(): ArrayList<Array<String>> {
+    fun readSecureSettings(): Array<Array<String>> {
         return querySettings(Settings.Secure.CONTENT_URI)
     }
 

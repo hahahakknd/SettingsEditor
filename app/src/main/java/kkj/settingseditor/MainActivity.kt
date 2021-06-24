@@ -15,7 +15,6 @@ import androidx.viewpager.widget.ViewPager
 //import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import kkj.settingseditor.data.MyDatabase
-import kkj.settingseditor.data.MyMemoryDatabase
 import kkj.settingseditor.data.MyPreferences
 import kkj.settingseditor.data.MySettings
 import kkj.settingseditor.ui.SectionsPagerAdapter
@@ -26,68 +25,66 @@ class MainActivity : AppCompatActivity() {
         private const val PERMISSION_REQUEST_CODE = 1000
     }
 
-//    class SearchBarExpandListener : MenuItem.OnActionExpandListener {
-//        private var mIsExpand = false
-//
-//        override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-//            Log.d(TAG, "onMenuItemActionExpand")
-//            return true
-//        }
-//
-//        override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-//            Log.d(TAG, "onMenuItemActionCollapse")
-//            return true
-//        }
-//    }
+    class TabSelectedListener(private val adapter: SectionsPagerAdapter)
+            : TabLayout.OnTabSelectedListener {
 
-    class SearchBarQueryTextListener : SearchView.OnQueryTextListener {
+        private var mSearchBar: MenuItem? = null
+
+        fun setSearchBar(searchBar: MenuItem?) {
+            mSearchBar = searchBar
+        }
+
+        override fun onTabSelected(tab: TabLayout.Tab?) {
+            val currentPos = tab?.position ?: adapter.count
+            if (currentPos < adapter.count) {
+                adapter.setCurrentPos(currentPos)
+                adapter.refreshItems()
+            }
+        }
+
+        override fun onTabUnselected(tab: TabLayout.Tab?) {
+            mSearchBar?.collapseActionView()
+        }
+
+        override fun onTabReselected(tab: TabLayout.Tab?) {
+        }
+    }
+
+    class QueryTextListener(private val adapter: SectionsPagerAdapter)
+            : SearchView.OnQueryTextListener {
         override fun onQueryTextSubmit(query: String?): Boolean {
-            Log.d(TAG, "onQueryTextSubmit: $query")
             return true
         }
 
         override fun onQueryTextChange(newText: String?): Boolean {
-            Log.d(TAG, "onQueryTextChange: $newText")
+            if (newText.isNullOrEmpty()) {
+                adapter.searchAllItems()
+            } else {
+                adapter.searchItems(newText)
+            }
             return true
         }
     }
 
     private lateinit var mView: View
-    private lateinit var mViewPager: ViewPager
-    private lateinit var mSectionsPagerAdapter: SectionsPagerAdapter
     private lateinit var mSearchBar: MenuItem
-
-//    private val mSearchBarExpandListener = SearchBarExpandListener()
-    private val mSearchBarQueryTextListener = SearchBarQueryTextListener()
+    private lateinit var mAdapter: SectionsPagerAdapter
+    private lateinit var mTabListener: TabSelectedListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         mView = findViewById(R.id.main_activity)
-        mViewPager = findViewById(R.id.view_pager)
-        mSectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
-        mViewPager.adapter = mSectionsPagerAdapter
+        mAdapter = SectionsPagerAdapter(this, supportFragmentManager)
+        mTabListener = TabSelectedListener(mAdapter)
 
-        val tabs: TabLayout = findViewById(R.id.tabs)
-        tabs.setupWithViewPager(mViewPager)
-        tabs.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                val num = tab?.position ?: -1
-                Log.d(TAG, "onTabSelected, position:$num")
-                mSectionsPagerAdapter.loadData(num)
-            }
+        val tabs = findViewById<TabLayout>(R.id.tabs)
+        val viewPager = findViewById<ViewPager>(R.id.view_pager)
 
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-                val num = tab?.position ?: -1
-                Log.d(TAG, "onTabUnselected, position:$num")
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-                val num = tab?.position ?: -1
-                Log.d(TAG, "onTabReselected, position:$num")
-            }
-        })
+        viewPager.adapter = mAdapter
+        tabs.setupWithViewPager(viewPager)
+        tabs.addOnTabSelectedListener(mTabListener)
 
 //        val fab: FloatingActionButton = findViewById(R.id.fab)
 //        fab.setOnClickListener { view ->
@@ -99,7 +96,6 @@ class MainActivity : AppCompatActivity() {
         MyPreferences.makeInstance(this)
         MySettings.makeInstance(this)
         MyDatabase.makeInstance(this)
-        MyMemoryDatabase.makeInstance(this)
     }
 
     override fun onResume() {
@@ -110,10 +106,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.options, menu)
         mSearchBar = menu?.findItem(R.id.app_bar_search) ?: return false
-//        mSearchBar.setOnActionExpandListener(mSearchBarExpandListener)
+        mTabListener.setSearchBar(mSearchBar)
 
         val searchView = mSearchBar.actionView as SearchView
-        searchView.setOnQueryTextListener(mSearchBarQueryTextListener)
+        searchView.setOnQueryTextListener(QueryTextListener(mAdapter))
         searchView.maxWidth = Int.MAX_VALUE
         searchView.queryHint = "Find settings name"
         return true

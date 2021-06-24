@@ -1,47 +1,67 @@
 package kkj.settingseditor.ui
 
 import android.content.Context
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import kkj.settingseditor.R
 
-private val TAB_TITLES = arrayOf(
-        R.string.tab_favorite,
-        R.string.tab_global,
-        R.string.tab_system,
-        R.string.tab_secure
-)
-
-/**
- * A [FragmentPagerAdapter] that returns a fragment corresponding to
- * one of the sections/tabs/pages.
- */
 class SectionsPagerAdapter(private val context: Context, fm: FragmentManager)
     : FragmentPagerAdapter(fm) {
     companion object {
         private const val TAG = "SettingsEditor.SectionsPagerAdapter"
+
+        private const val FAVORITE_PAGE = 0
+        private const val GLOBAL_PAGE = 1
+        private const val SYSTEM_PAGE = 2
+        private const val SECURE_PAGE = 3
     }
 
-    private val mFragmentList: ArrayList<PlaceholderFragment> = ArrayList()
+    class FragmentData(val name: Int, val adapter: CardViewAdapter, val fragment: PlaceholderFragment)
+
+    private var mFragmentList: Array<FragmentData>
+    private var mCurrentPos = 0
+
+    init {
+        val favoriteAdapter = CardViewAdapter(context, FAVORITE_PAGE, fm)
+        val globalAdapter = CardViewAdapter(context, GLOBAL_PAGE, fm)
+        val systemAdapter = CardViewAdapter(context, SYSTEM_PAGE, fm)
+        val secureAdapter = CardViewAdapter(context, SECURE_PAGE, fm)
+
+        mFragmentList = arrayOf(
+            FragmentData(R.string.tab_favorite, favoriteAdapter, PlaceholderFragment(favoriteAdapter)),
+            FragmentData(R.string.tab_global, globalAdapter, PlaceholderFragment(globalAdapter)),
+            FragmentData(R.string.tab_system, systemAdapter, PlaceholderFragment(systemAdapter)),
+            FragmentData(R.string.tab_secure, secureAdapter, PlaceholderFragment(secureAdapter))
+        )
+    }
 
     override fun getItem(position: Int): Fragment {
-        // getItem is called to instantiate the fragment for the given page.
-        // Return a PlaceholderFragment (defined as a static inner class below).
-        mFragmentList.add(position, PlaceholderFragment.newInstance(position))
-        return mFragmentList[position]
+        return mFragmentList[position].fragment
     }
 
     override fun getPageTitle(position: Int): CharSequence {
-        return context.resources.getString(TAB_TITLES[position])
+        return context.resources.getString(mFragmentList[position].name)
     }
 
     override fun getCount(): Int {
-        // Show 4 total pages.
-        return 4
+        return mFragmentList.size
     }
 
-    fun loadData(position: Int) {
-        mFragmentList[position].loadData()
+    fun setCurrentPos(currentPos: Int) {
+        mCurrentPos = currentPos
+    }
+
+    fun refreshItems() {
+        mFragmentList[mCurrentPos].adapter.refreshItems()
+    }
+
+    fun searchAllItems() {
+        mFragmentList[mCurrentPos].adapter.searchAllItems()
+    }
+
+    fun searchItems(pattern: String) {
+        mFragmentList[mCurrentPos].adapter.searchItems(pattern)
     }
 }

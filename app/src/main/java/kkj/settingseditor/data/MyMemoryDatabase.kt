@@ -6,20 +6,12 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
 
-class MyMemoryDatabase private constructor (context: Context) {
+class MyMemoryDatabase(context: Context) {
     companion object {
         private const val TAG = "SettingsEditor.MyMemoryDatabase"
         private const val ID = 0
         private const val NAME = 1
         private const val VALUE = 2
-
-        @Volatile
-        private var instance: MyMemoryDatabase? = null
-        fun getInstance() = instance
-        @Synchronized
-        fun makeInstance(context: Context) {
-            instance ?: MyMemoryDatabase(context).also { instance = it }
-        }
     }
 
     private object DbContract {
@@ -69,19 +61,22 @@ class MyMemoryDatabase private constructor (context: Context) {
                   "FROM ${DbContract.SettingsEntry.TABLE_SETTINGS} " +
                   "ORDER BY ${DbContract.SettingsEntry.COLUMN_NAME} COLLATE NOCASE ASC"
         val whereArgs = null
-        val result = ArrayList<Array<String>>()
 
         mDb.rawQuery(sql, whereArgs)?.use { cursor ->
+            val result = ArrayList<Array<String>>()
             while (cursor.moveToNext()) {
-                val colData = Array(cursor.columnCount) { "" }
-                for (colIdx in 0 until cursor.columnCount) {
-                    colData[colIdx] = getDataAsString(cursor, colIdx)
-                }
-                result.add(colData)
+                result.add(
+                    arrayOf(
+                        getDataAsString(cursor, ID),
+                        getDataAsString(cursor, NAME),
+                        getDataAsString(cursor, VALUE)
+                    )
+                )
             }
+            return result
         }
 
-        return result
+        return ArrayList()
     }
 
     fun search(pattern: String): ArrayList<Array<String>> {
@@ -89,25 +84,29 @@ class MyMemoryDatabase private constructor (context: Context) {
                          "${DbContract.SettingsEntry.COLUMN_NAME}, " +
                          "${DbContract.SettingsEntry.COLUMN_VALUE} " +
                   "FROM ${DbContract.SettingsEntry.TABLE_SETTINGS} " +
-                  "WHERE ${DbContract.SettingsEntry.COLUMN_NAME} GLOB *[?]* " +
+                  "WHERE ${DbContract.SettingsEntry.COLUMN_NAME} GLOB ? " +
                   "ORDER BY ${DbContract.SettingsEntry.COLUMN_NAME} COLLATE NOCASE ASC"
-        val whereArgs = arrayOf(pattern)
-        val result = ArrayList<Array<String>>()
+        val whereArgs = arrayOf("*$pattern*")
 
         mDb.rawQuery(sql, whereArgs)?.use { cursor ->
+            val result = ArrayList<Array<String>>()
             while (cursor.moveToNext()) {
-                val colData = Array(cursor.columnCount) { "" }
-                for (colIdx in 0 until cursor.columnCount) {
-                    colData[colIdx] = getDataAsString(cursor, colIdx)
-                }
-                result.add(colData)
+                result.add(
+                    arrayOf(
+                        getDataAsString(cursor, ID),
+                        getDataAsString(cursor, NAME),
+                        getDataAsString(cursor, VALUE)
+                    )
+                )
             }
+            return result
         }
 
-        return result
+        return ArrayList()
     }
 
-    fun refresh(items: ArrayList<Array<String>>) {
+    fun refresh(items: Array<Array<String>>) {
+        mDb.beginTransaction()
         mDb.execSQL(DbContract.DELETE_TABLE_SQL)
         mDb.execSQL(DbContract.CREATE_TABLE_SQL)
 
@@ -122,6 +121,8 @@ class MyMemoryDatabase private constructor (context: Context) {
             val bindArgs = arrayOf(item[ID], item[NAME], item[VALUE])
             mDb.execSQL(sql, bindArgs)
         }
+        mDb.setTransactionSuccessful()
+        mDb.endTransaction()
     }
 
     fun delete(id: String) {
@@ -133,7 +134,6 @@ class MyMemoryDatabase private constructor (context: Context) {
 
     private class MyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, null, null, DATABASE_VERSION) {
         companion object {
-            // If you change the database schema, you must increment the database version.
             const val DATABASE_VERSION = 1
         }
 
@@ -142,8 +142,6 @@ class MyMemoryDatabase private constructor (context: Context) {
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            // This database is only a cache for online data, so its upgrade policy is
-            // to simply to discard the data and start over
             db.execSQL(DbContract.DELETE_TABLE_SQL)
             onCreate(db)
         }
