@@ -12,12 +12,11 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.viewpager.widget.ViewPager
-//import com.google.android.material.floatingactionbutton.FloatingActionButton
+// import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
-import kkj.settingseditor.data.MyDatabase
+import kkj.settingseditor.data.MyDataCenter
 import kkj.settingseditor.data.MyPreferences
-import kkj.settingseditor.data.MySettings
-import kkj.settingseditor.ui.SectionsPagerAdapter
+import kkj.settingseditor.ui.ViewPagerAdapter
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -25,9 +24,8 @@ class MainActivity : AppCompatActivity() {
         private const val PERMISSION_REQUEST_CODE = 1000
     }
 
-    class TabSelectedListener(private val adapter: SectionsPagerAdapter)
+    class TabSelectedListener()
             : TabLayout.OnTabSelectedListener {
-
         private var mSearchBar: MenuItem? = null
 
         fun setSearchBar(searchBar: MenuItem?) {
@@ -35,11 +33,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onTabSelected(tab: TabLayout.Tab?) {
-            val currentPos = tab?.position ?: adapter.count
-            if (currentPos < adapter.count) {
-                adapter.setCurrentPos(currentPos)
-                adapter.refreshItems()
-            }
+//            when (tab?.position ?: -1) {
+//                FAVORITE_PAGE -> pageViewModel.refresh(MyDataCenter.Type.FAVORITE)
+//                GLOBAL_PAGE -> pageViewModel.refresh(MyDataCenter.Type.GLOBAL)
+//                SYSTEM_PAGE -> pageViewModel.refresh(MyDataCenter.Type.SYSTEM)
+//                SECURE_PAGE -> pageViewModel.refresh(MyDataCenter.Type.SECURE)
+//            }
         }
 
         override fun onTabUnselected(tab: TabLayout.Tab?) {
@@ -50,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    class QueryTextListener(private val adapter: SectionsPagerAdapter)
+    class QueryTextListener()
             : SearchView.OnQueryTextListener {
         override fun onQueryTextSubmit(query: String?): Boolean {
             return true
@@ -58,9 +57,9 @@ class MainActivity : AppCompatActivity() {
 
         override fun onQueryTextChange(newText: String?): Boolean {
             if (newText.isNullOrEmpty()) {
-                adapter.searchAllItems()
+//                pageViewModel.searchAll()
             } else {
-                adapter.searchItems(newText)
+//                pageViewModel.search(newText)
             }
             return true
         }
@@ -68,21 +67,21 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mView: View
     private lateinit var mSearchBar: MenuItem
-    private lateinit var mAdapter: SectionsPagerAdapter
     private lateinit var mTabListener: TabSelectedListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        MyDataCenter.makeInstance(applicationContext)
+
         mView = findViewById(R.id.main_activity)
-        mAdapter = SectionsPagerAdapter(this, supportFragmentManager)
-        mTabListener = TabSelectedListener(mAdapter)
+        mTabListener = TabSelectedListener()
+
+        val viewPager = findViewById<ViewPager>(R.id.view_pager)
+        viewPager.adapter = ViewPagerAdapter(this, supportFragmentManager)
 
         val tabs = findViewById<TabLayout>(R.id.tabs)
-        val viewPager = findViewById<ViewPager>(R.id.view_pager)
-
-        viewPager.adapter = mAdapter
         tabs.setupWithViewPager(viewPager)
         tabs.addOnTabSelectedListener(mTabListener)
 
@@ -92,15 +91,13 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         setSupportActionBar(findViewById(R.id.toolbar))
-
-        MyPreferences.makeInstance(this)
-        MySettings.makeInstance(this)
-        MyDatabase.makeInstance(this)
     }
 
     override fun onResume() {
         super.onResume()
         setWriteSettingsPermission()
+        MyDataCenter.getInstance()?.refresh()
+        Log.d(TAG, "Refresh data.")
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -109,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         mTabListener.setSearchBar(mSearchBar)
 
         val searchView = mSearchBar.actionView as SearchView
-        searchView.setOnQueryTextListener(QueryTextListener(mAdapter))
+        searchView.setOnQueryTextListener(QueryTextListener())
         searchView.maxWidth = Int.MAX_VALUE
         searchView.queryHint = "Find settings name"
         return true

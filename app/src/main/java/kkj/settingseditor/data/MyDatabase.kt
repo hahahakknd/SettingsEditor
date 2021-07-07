@@ -4,133 +4,73 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.provider.BaseColumns
+import android.util.Log
 
-class MyDatabase private constructor (context: Context) {
+class MyDatabase(context: Context) {
     companion object {
         private const val TAG = "SettingsEditor.MyDatabase"
+        private const val DATABASE_NAME = "my_database.db"
+        private const val DATABASE_VERSION = 1
 
-        @Volatile
-        private var instance: MyDatabase? = null
-        fun getInstance() = instance
-        @Synchronized
-        fun makeInstance(context: Context) {
-            instance ?: MyDatabase(context).also { instance = it }
+        private object DBTable {
+            const val TBL_NAME = "favorite_settings"
+            const val COL_NAME = "name"
+            const val COL_TYPE = "type"
+        }
+
+        private object SQL {
+            const val CREATE_TABLE =
+                "CREATE TABLE ${DBTable.TBL_NAME}(" +
+                             "${DBTable.COL_NAME} TEXT NOT NULL, " +
+                             "${DBTable.COL_TYPE} TEXT NOT NULL)"
+            const val DROP_TABLE = "DROP TABLE IF EXISTS ${DBTable.TBL_NAME}"
+            const val DELETE_TABLE = "DELETE FROM ${DBTable.TBL_NAME}"
+            const val READ_ALL_FAVORITE =
+                "SELECT ${DBTable.COL_NAME}, ${DBTable.COL_TYPE} " +
+                "FROM ${DBTable.TBL_NAME} " +
+                "ORDER BY ${DBTable.COL_NAME} COLLATE NOCASE ASC"
+            const val CHECK_FAVORITE =
+                "SELECT count(*) " +
+                "FROM ${DBTable.TBL_NAME} " +
+                "WHERE ${DBTable.COL_NAME}=? AND ${DBTable.COL_TYPE}=?"
+            const val WRITE_FAVORITE =
+                "INSERT INTO ${DBTable.TBL_NAME}(${DBTable.COL_NAME}, ${DBTable.COL_TYPE}) " +
+                "VALUES (?,?)"
+            const val DELETE_FAVORITE =
+                "DELETE FROM ${DBTable.TBL_NAME} " +
+                "WHERE ${DBTable.COL_NAME}=? AND ${DBTable.COL_TYPE}=?"
         }
     }
 
-    private object DbContract {
-        const val CREATE_TABLE_SQL
-            = "CREATE TABLE ${FavoriteSettingsEntry.TABLE_FAVOR} " +
-                "(${BaseColumns._ID} INTEGER PRIMARY KEY, " +
-                "${FavoriteSettingsEntry.COLUMN_NAME} TEXT NOT NULL, " +
-                "${FavoriteSettingsEntry.COLUMN_VALUE} TEXT)"
-        const val DELETE_TABLE_SQL = "DROP TABLE IF EXISTS ${FavoriteSettingsEntry.TABLE_FAVOR}"
+    private val mDb = DBHelper(context).writableDatabase
 
-        object FavoriteSettingsEntry : BaseColumns {
-            const val TABLE_FAVOR = "favorite_settings"
-            const val COLUMN_NAME = "name"
-            const val COLUMN_VALUE = "value"
+    fun read(): Cursor {
+        return mDb.rawQuery(SQL.READ_ALL_FAVORITE,null)
+    }
+
+    fun write(name: String, type: String) {
+        val isExist: Boolean
+        mDb.rawQuery(SQL.CHECK_FAVORITE, arrayOf(name, type)).use {
+            it.moveToNext()
+            isExist = (DataUtils.getDataAsString(it, 0).toInt() != 0)
+        }
+
+        if (!isExist) {
+            mDb.execSQL(SQL.WRITE_FAVORITE, arrayOf(name, type))
         }
     }
 
-    private val mDb = MyDatabaseHelper(context).writableDatabase
-
-    private fun getDataAsString(cursor: Cursor, index: Int): String {
-        when (cursor.getType(index)) {
-            Cursor.FIELD_TYPE_NULL -> {
-                return "NULL"
-            }
-            Cursor.FIELD_TYPE_INTEGER -> {
-                return cursor.getInt(index).toString()
-            }
-            Cursor.FIELD_TYPE_FLOAT -> {
-                return cursor.getFloat(index).toString()
-            }
-            Cursor.FIELD_TYPE_STRING -> {
-                return cursor.getString(index)
-            }
-            Cursor.FIELD_TYPE_BLOB -> {
-                return cursor.getBlob(index).toString()
-            }
-            else -> {
-                return "INVALID TYPE"
-            }
-        }
+    fun delete(name: String, type: String) {
+        mDb.execSQL(SQL.DELETE_FAVORITE, arrayOf(name, type))
     }
 
-    fun read(): Array<Array<String>> {
-        val sql = "SELECT ${BaseColumns._ID}, " +
-                         "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}, " +
-                         "${DbContract.FavoriteSettingsEntry.COLUMN_VALUE} " +
-                  "FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
-                  "ORDER BY ${DbContract.FavoriteSettingsEntry.COLUMN_NAME} COLLATE NOCASE ASC"
-        val whereArgs = null
-
-        mDb.rawQuery(sql, whereArgs)?.use { cursor ->
-            val result = Array(cursor.count) { Array(cursor.columnCount) { "" } }
-            var rowIndex = 0
-            while (cursor.moveToNext()) {
-                for (colIndex in 0 until cursor.columnCount) {
-                    result[rowIndex][colIndex] = getDataAsString(cursor, colIndex)
-                }
-                rowIndex++
-            }
-            return result
-        }
-
-        return emptyArray()
-    }
-
-    fun write(id: String, name: String, value: String) {
-        var isUpdate = false
-        val selectSql = "SELECT count(*) " +
-                        "FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
-                        "WHERE ${BaseColumns._ID}=?"
-        val selectWhereArgs = arrayOf(id)
-        mDb.rawQuery(selectSql, selectWhereArgs)?.use { cursor ->
-            cursor.moveToNext()
-            isUpdate = (getDataAsString(cursor,0).toInt() != 0)
-        }
-
-        val sql: String
-        val bindArgs: Array<String>
-        if (isUpdate) {
-            sql = "UPDATE ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
-                  "SET ${DbContract.FavoriteSettingsEntry.COLUMN_VALUE}=? " +
-                  "WHERE ${BaseColumns._ID}=?"
-            bindArgs = arrayOf(value, id)
-        } else {
-            sql = "INSERT INTO ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR}(" +
-                       "${BaseColumns._ID}, " +
-                       "${DbContract.FavoriteSettingsEntry.COLUMN_NAME}, " +
-                       "${DbContract.FavoriteSettingsEntry.COLUMN_VALUE}" +
-                  ") " +
-                  "VALUES (?,?,?)"
-            bindArgs = arrayOf(id, name, value)
-        }
-        mDb.execSQL(sql, bindArgs)
-    }
-
-    fun delete(id: String) {
-        val deleteSql = "DELETE FROM ${DbContract.FavoriteSettingsEntry.TABLE_FAVOR} " +
-                        "WHERE ${BaseColumns._ID}=?"
-        val deleteWhereArgs = arrayOf(id)
-        mDb.execSQL(deleteSql, deleteWhereArgs)
-    }
-
-    private class MyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
-        companion object {
-            const val DATABASE_VERSION = 1
-            const val DATABASE_NAME = "my_database.db"
-        }
-
+    private class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
         override fun onCreate(db: SQLiteDatabase) {
-            db.execSQL(DbContract.CREATE_TABLE_SQL)
+            db.execSQL(SQL.CREATE_TABLE)
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            db.execSQL(DbContract.DELETE_TABLE_SQL)
+            db.execSQL(SQL.DROP_TABLE)
             onCreate(db)
         }
 
