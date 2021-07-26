@@ -1,5 +1,7 @@
 package kkj.settingseditor
 
+// import com.google.android.material.floatingactionbutton.FloatingActionButton
+
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -12,19 +14,20 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.viewpager.widget.ViewPager
-// import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import kkj.settingseditor.data.MyDataCenter
 import kkj.settingseditor.data.MyPreferences
 import kkj.settingseditor.ui.ViewPagerAdapter
 
+
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG: String = "SettingsEditor.MainActivity"
         private const val PERMISSION_REQUEST_CODE = 1000
+        private var mTabNum = MyDataCenter.SETTINGS_FAVORITE
     }
 
-    class TabSelectedListener()
+    class TabSelectedListener
             : TabLayout.OnTabSelectedListener {
         private var mSearchBar: MenuItem? = null
 
@@ -33,12 +36,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onTabSelected(tab: TabLayout.Tab?) {
-//            when (tab?.position ?: -1) {
-//                FAVORITE_PAGE -> pageViewModel.refresh(MyDataCenter.Type.FAVORITE)
-//                GLOBAL_PAGE -> pageViewModel.refresh(MyDataCenter.Type.GLOBAL)
-//                SYSTEM_PAGE -> pageViewModel.refresh(MyDataCenter.Type.SYSTEM)
-//                SECURE_PAGE -> pageViewModel.refresh(MyDataCenter.Type.SECURE)
-//            }
+            when (tab?.position ?: -1) {
+                MyDataCenter.SETTINGS_FAVORITE -> mTabNum = MyDataCenter.SETTINGS_FAVORITE
+                MyDataCenter.SETTINGS_GLOBAL -> mTabNum = MyDataCenter.SETTINGS_GLOBAL
+                MyDataCenter.SETTINGS_SYSTEM -> mTabNum = MyDataCenter.SETTINGS_SYSTEM
+                MyDataCenter.SETTINGS_SECURE -> mTabNum = MyDataCenter.SETTINGS_SECURE
+            }
         }
 
         override fun onTabUnselected(tab: TabLayout.Tab?) {
@@ -49,7 +52,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    class QueryTextListener()
+    class QueryTextListener
             : SearchView.OnQueryTextListener {
         override fun onQueryTextSubmit(query: String?): Boolean {
             return true
@@ -57,9 +60,9 @@ class MainActivity : AppCompatActivity() {
 
         override fun onQueryTextChange(newText: String?): Boolean {
             if (newText.isNullOrEmpty()) {
-//                pageViewModel.searchAll()
+                MyDataCenter.getInstance()?.searchAllSettings(mTabNum)
             } else {
-//                pageViewModel.search(newText)
+                MyDataCenter.getInstance()?.searchSettings(mTabNum, newText)
             }
             return true
         }

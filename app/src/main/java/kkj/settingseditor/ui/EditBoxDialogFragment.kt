@@ -22,9 +22,9 @@ class EditBoxDialogFragment(private val fragmentManager: FragmentManager) {
     }
 
     class InnerDialogFragment(
-        private val itemName: String,
-        private val itemValue: String,
-        private val listener: (itemValue: String) -> Unit
+            private val itemName: String,
+            private val itemValue: String,
+            private val listener: (itemValue: String) -> Unit
     ) : DialogFragment() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)

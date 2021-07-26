@@ -48,7 +48,7 @@ class MyDataCenter private constructor(context: Context) {
             const val SEARCH_SETTINGS =
                 "SELECT ${SettingsTable.COL_NAME}, ${SettingsTable.COL_VALUE}, ${SettingsTable.COL_TYPE} " +
                 "FROM ${SettingsTable.TBL_NAME} " +
-                "WHERE ${SettingsTable.COL_TYPE}=? AND ${SettingsTable.COL_NAME} GLOB ? " +
+                "WHERE ${SettingsTable.COL_TYPE}=? AND ${SettingsTable.COL_NAME} LIKE ?" +
                 "ORDER BY ${SettingsTable.COL_NAME} COLLATE NOCASE ASC"
             const val SEARCH_ALL_SETTINGS =
                 "SELECT ${SettingsTable.COL_NAME}, ${SettingsTable.COL_VALUE}, ${SettingsTable.COL_TYPE} " +
@@ -58,7 +58,7 @@ class MyDataCenter private constructor(context: Context) {
             const val SEARCH_FAVORITE =
                 "SELECT ${SettingsTable.COL_NAME}, ${SettingsTable.COL_VALUE}, ${SettingsTable.COL_TYPE} " +
                 "FROM ${SettingsTable.TBL_NAME} " +
-                "WHERE ${SettingsTable.COL_IS_FAVORITE}=1 AND ${SettingsTable.COL_NAME} GLOB ? " +
+                "WHERE ${SettingsTable.COL_IS_FAVORITE}=1 AND ${SettingsTable.COL_NAME} LIKE ? " +
                 "ORDER BY ${SettingsTable.COL_NAME} COLLATE NOCASE ASC"
             const val SEARCH_ALL_FAVORITE =
                 "SELECT ${SettingsTable.COL_NAME}, ${SettingsTable.COL_VALUE}, ${SettingsTable.COL_TYPE} " +
@@ -380,7 +380,7 @@ class MyDataCenter private constructor(context: Context) {
         private fun searchSettings(dataType: Int, pattern: String) {
             val result = ArrayList<Item>()
             if (dataType == SETTINGS_FAVORITE) {
-                cacheDb.rawQuery(SQL.SEARCH_FAVORITE, arrayOf("*$pattern*")).use {
+                cacheDb.rawQuery(SQL.SEARCH_FAVORITE, arrayOf("%$pattern%")).use {
                     while (it.moveToNext()) {
                         result.add(
                             Item(
@@ -397,7 +397,7 @@ class MyDataCenter private constructor(context: Context) {
                     }
                 }
             } else {
-                cacheDb.rawQuery(SQL.SEARCH_SETTINGS, arrayOf(dataType.toString(), "*$pattern*")).use {
+                cacheDb.rawQuery(SQL.SEARCH_SETTINGS, arrayOf(dataType.toString(), "%$pattern%")).use {
                     while (it.moveToNext()) {
                         val foundType = it.getInt(2)
                         if (dataType != foundType) {
@@ -495,20 +495,21 @@ class MyDataCenter private constructor(context: Context) {
         }
 
         private fun updateSettings(name: String, value: String, settingsType: Int) {
-            var isSuccess = false
-            when (settingsType) {
-                SETTINGS_GLOBAL -> {
-                    isSuccess = mySettings.writeGlobalSettings(name, value)
-                }
-                SETTINGS_SYSTEM -> {
-                    isSuccess = mySettings.writeSystemSettings(name, value)
-                }
-                SETTINGS_SECURE -> {
-                    isSuccess = mySettings.writeSecureSettings(name, value)
-                }
-                else -> {}
-            }
+//            var isSuccess = false
+//            when (settingsType) {
+//                SETTINGS_GLOBAL -> {
+//                    isSuccess = mySettings.writeGlobalSettings(name, value)
+//                }
+//                SETTINGS_SYSTEM -> {
+//                    isSuccess = mySettings.writeSystemSettings(name, value)
+//                }
+//                SETTINGS_SECURE -> {
+//                    isSuccess = mySettings.writeSecureSettings(name, value)
+//                }
+//                else -> {}
+//            }
 
+            val isSuccess = true
             if (isSuccess) {
                 cacheDb.execSQL(SQL.UPDATE_SETTINGS, arrayOf(value, name, settingsType))
 
