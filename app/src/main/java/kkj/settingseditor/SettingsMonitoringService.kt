@@ -45,7 +45,6 @@ class SettingsMonitoringService: Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         Log.d(TAG, "onBind")
-        registerContentObserver()
         return null
     }
 
@@ -55,17 +54,18 @@ class SettingsMonitoringService: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand")
-        return super.onStartCommand(intent, flags, startId)
+        registerContentObserver()
+        return START_STICKY
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "onUnbind")
-        unregisterContentObserver()
-        return super.onUnbind(intent)
+         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
+        unregisterContentObserver()
     }
 
     private fun startForeground() {

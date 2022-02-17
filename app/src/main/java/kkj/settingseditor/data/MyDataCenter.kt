@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.os.*
 import android.util.Log
+import kkj.settingseditor.MyUtils
 
 // 여기는 일종의 Data Server 개념이다.
 // Singleton 으로 구현되어 Process 가 종료될 때까지 살아있는다.
@@ -120,34 +121,52 @@ class MyDataCenter private constructor(context: Context) {
     fun registerObserver(dataObserver: DataObserver) {
         for (ov in mDataObservers) {
             if (ov.id == dataObserver.id) {
-                Log.e(TAG, "DataObserver(${dataObserver.id}) is Already registered.")
+                Log.e(TAG, "DataObserver(${MyUtils.typeToString(dataObserver.id)}) is Already registered.")
                 return
             }
         }
         mDataObservers.add(dataObserver)
     }
 
+    fun isDataObserverRegistered(id: Int) : Boolean {
+        for (ov in mDataObservers) {
+            if (ov.id == id) {
+                return true
+            }
+        }
+        return false
+    }
+
     fun registerObserver(uiObserver: UIObserver) {
         for (ov in mUIObservers) {
             if (ov.id == uiObserver.id) {
-                Log.e(TAG, "UIObserver(${uiObserver.id}) is Already registered.")
+                Log.e(TAG, "UIObserver(${MyUtils.typeToString(uiObserver.id)}) is Already registered.")
                 return
             }
         }
         mUIObservers.add(uiObserver)
     }
 
+    fun isUIObserverRegistered(id: Int) : Boolean {
+        for (ov in mUIObservers) {
+            if (ov.id == id) {
+                return true
+            }
+        }
+        return false
+    }
+
     fun unregisterObserver(id: Int) {
         for (ov in mDataObservers) {
             if (ov.id == id) {
                 mDataObservers.remove(ov)
-                return
+                break
             }
         }
         for (ov in mUIObservers) {
             if (ov.id == id) {
                 mUIObservers.remove(ov)
-                return
+                break
             }
         }
     }
@@ -401,7 +420,7 @@ class MyDataCenter private constructor(context: Context) {
                     while (it.moveToNext()) {
                         val foundType = it.getInt(2)
                         if (dataType != foundType) {
-                            Log.e(TAG, "Invalid settings, find type $dataType but found type $foundType")
+                            Log.e(TAG, "Invalid settings, find type ${MyUtils.typeToString(dataType)} but found type ${MyUtils.typeToString(foundType)}")
                             continue
                         }
                         result.add(
@@ -558,14 +577,8 @@ class MyDataCenter private constructor(context: Context) {
                 }
             }
 
-            val bundle = Bundle()
-            bundle.putString(UIHandler.NAME, name)
-            bundle.putString(UIHandler.VALUE, value)
-            bundle.putInt(UIHandler.TYPE, settingsType)
-            val message = Message.obtain()
-            message.what = UIHandler.CHANGED
-            message.data = bundle
-            uiHandler.sendMsg(message)
+            // 여기서는 UI 를 갱신하지 않는다.
+            // Favorite 항목에 데이터를 추가하기 때문에 현재 화면에 나타난 항목에는 영향이 없다.
         }
 
         private fun deleteFavorite(name: String, value: String, settingsType: Int) {
@@ -587,14 +600,8 @@ class MyDataCenter private constructor(context: Context) {
                 }
             }
 
-            val bundle = Bundle()
-            bundle.putString(UIHandler.NAME, name)
-            bundle.putString(UIHandler.VALUE, value)
-            bundle.putInt(UIHandler.TYPE, settingsType)
-            val message = Message.obtain()
-            message.what = UIHandler.CHANGED
-            message.data = bundle
-            uiHandler.sendMsg(message)
+            // 여기서는 UI 를 갱신하지 않는다.
+            // Favorite 항목에 데이터를 삭제하기 때문에 현재 화면에 나타난 항목에는 영향이 없다.
         }
     }
 

@@ -19,7 +19,6 @@ import kkj.settingseditor.data.MyDataCenter
 import kkj.settingseditor.data.MyPreferences
 import kkj.settingseditor.ui.ViewPagerAdapter
 
-
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG: String = "SettingsEditor.MainActivity"
