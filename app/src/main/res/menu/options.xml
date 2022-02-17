@@ -7,7 +7,7 @@
         android:icon="@android:drawable/ic_menu_search"
         android:title="@string/search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="ifRoom|collapseActionView" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/auto_run"
         android:checkable="true"
