@@ -514,48 +514,53 @@ class MyDataCenter private constructor(context: Context) {
         }
 
         private fun updateSettings(name: String, value: String, settingsType: Int) {
-//            var isSuccess = false
-//            when (settingsType) {
-//                SETTINGS_GLOBAL -> {
-//                    isSuccess = mySettings.writeGlobalSettings(name, value)
-//                }
-//                SETTINGS_SYSTEM -> {
-//                    isSuccess = mySettings.writeSystemSettings(name, value)
-//                }
-//                SETTINGS_SECURE -> {
-//                    isSuccess = mySettings.writeSecureSettings(name, value)
-//                }
-//                else -> {}
-//            }
-
-            val isSuccess = true
-            if (isSuccess) {
-                cacheDb.execSQL(SQL.UPDATE_SETTINGS, arrayOf(value, name, settingsType))
-
-                for (ov in dataObservers) {
-                    if ((ov.id == SETTINGS_FAVORITE) or (ov.id == settingsType)) {
-                        ov.onUpdated(
-                            Item(name, value,
-                                when (settingsType) {
-                                    SETTINGS_GLOBAL -> SettingsType.GLOBAL
-                                    SETTINGS_SYSTEM -> SettingsType.SYSTEM
-                                    SETTINGS_SECURE -> SettingsType.SECURE
-                                    else -> continue
-                                }
-                            )
-                        )
-                    }
+            var isSuccess = false
+            when (settingsType) {
+                SETTINGS_GLOBAL -> {
+                    isSuccess = mySettings.writeGlobalSettings(name, value)
                 }
-
-                val bundle = Bundle()
-                bundle.putString(UIHandler.NAME, name)
-                bundle.putString(UIHandler.VALUE, value)
-                bundle.putInt(UIHandler.TYPE, settingsType)
-                val message = Message.obtain()
-                message.what = UIHandler.CHANGED
-                message.data = bundle
-                uiHandler.sendMsg(message)
+                SETTINGS_SYSTEM -> {
+                    isSuccess = mySettings.writeSystemSettings(name, value)
+                }
+                SETTINGS_SECURE -> {
+                    isSuccess = mySettings.writeSecureSettings(name, value)
+                }
+                else -> {
+                    Log.e(TAG,"Cannot update settings, because unknown type(${MyUtils.typeToString(settingsType)}).")
+                }
             }
+
+            if (!isSuccess) {
+                val message = "Cannot update settings, because the writing value is failed."
+                Log.e(TAG, message)
+                return
+            }
+
+            cacheDb.execSQL(SQL.UPDATE_SETTINGS, arrayOf(value, name, settingsType))
+
+            for (ov in dataObservers) {
+                if ((ov.id == SETTINGS_FAVORITE) or (ov.id == settingsType)) {
+                    ov.onUpdated(
+                        Item(name, value,
+                            when (settingsType) {
+                                SETTINGS_GLOBAL -> SettingsType.GLOBAL
+                                SETTINGS_SYSTEM -> SettingsType.SYSTEM
+                                SETTINGS_SECURE -> SettingsType.SECURE
+                                else -> continue
+                            }
+                        )
+                    )
+                }
+            }
+
+            val bundle = Bundle()
+            bundle.putString(UIHandler.NAME, name)
+            bundle.putString(UIHandler.VALUE, value)
+            bundle.putInt(UIHandler.TYPE, settingsType)
+            val message = Message.obtain()
+            message.what = UIHandler.CHANGED
+            message.data = bundle
+            uiHandler.sendMsg(message)
         }
 
         private fun addFavorite(name: String, value: String, settingsType: Int) {

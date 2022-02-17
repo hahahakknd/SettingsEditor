@@ -44,7 +44,11 @@ class CardViewAdapter(
         view.setOnClickListener {
             viewHolder.mItem?.let { item ->
                 editBoxDialogFragment.show(item.name, item.value) { it2 ->
-                    MyUtils.showSnackbarWithAutoDismiss(view, it2)
+                    MyDataCenter.getInstance()?.updateSettings(Item(item.name, it2, item.type))
+                    MyUtils.showSnackbarWithAutoDismiss(
+                        view,
+                        "${item.name} is changed from ${item.value} to ${it2}."
+                    )
                 }
             }
         }

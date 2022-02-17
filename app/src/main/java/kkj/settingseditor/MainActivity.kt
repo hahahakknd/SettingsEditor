@@ -193,7 +193,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        MyUtils.showSnackbarWithAction(mView, "Need to grated WRITE_SETTINGS permission.", "OK") {
+        MyUtils.showSnackbarWithAction(mView, "Need to grated MANAGE_WRITE_SETTINGS permission.", "OK") {
             val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS)
             intent.data = Uri.parse("package:${packageName}")
             startActivityForResult(intent, PERMISSION_REQUEST_CODE)
